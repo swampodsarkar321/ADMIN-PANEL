@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Topbar, { type ToastMsg } from './components/Topbar';
 import { ToastHost, type Toast } from './components/Toast';
 import { AuthProvider, useAuth } from './firebase/auth';
+import { firebaseConfigError } from './firebase/config';
 import { subscribeDevices, subscribeCommands, subscribeBlockEvents, isOnline } from './firebase/database';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -177,7 +178,39 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
+function FirebaseSetupError() {
+  const vars = [
+    'VITE_FIREBASE_API_KEY',
+    'VITE_FIREBASE_AUTH_DOMAIN',
+    'VITE_FIREBASE_DATABASE_URL',
+    'VITE_FIREBASE_PROJECT_ID',
+    'VITE_FIREBASE_APP_ID',
+    'VITE_ADMIN_EMAILS (optional)',
+  ];
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="glass w-full max-w-lg space-y-3 p-6">
+        <h1 className="text-lg font-extrabold">⚠️ Firebase config missing</h1>
+        <p className="text-sm text-slate-400">
+          {firebaseConfigError || 'Firebase is not configured.'} The app was built without its environment variables.
+        </p>
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-300">
+          <li>Vercel → Project → <b>Settings → Environment Variables</b></li>
+          <li>Add these for <b>Production</b> (and Preview):</li>
+        </ol>
+        <code className="block rounded-lg bg-black/40 p-3 font-mono text-[11px] leading-relaxed text-sky-300">
+          {vars.join('\n')}
+        </code>
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-300" start={3}>
+          <li>Deployments → <b>Redeploy</b> with <b>Build Cache OFF</b></li>
+        </ol>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  if (firebaseConfigError) return <FirebaseSetupError />;
   return (
     <BrowserRouter>
       <AuthProvider>
